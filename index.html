@@ -7,111 +7,163 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="top-warning">
-    ネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
+  <div class="global-watermark" aria-hidden="true">
+    <span>JOKE ONLY</span>
+    <span>SIMULATION</span>
+    <span>NOT REAL INCOME</span>
+    <span>JOKE ONLY</span>
+    <span>SIMULATION</span>
+    <span>NOT REAL INCOME</span>
   </div>
 
-  <main class="app">
-    <section class="hero">
-      <p class="badge">JOKE DASHBOARD</p>
-      <h1>自称年収シミュレーター</h1>
-      <p class="lead">
-        仮想ポイントをもとに、口頭ネタ用の「自称年収ステータス」を表示します。
-        実決済・領収書・請求書・収入証明の機能はありません。
-      </p>
-    </section>
+  <div class="top-warning">
+    JOKE ONLY / これはネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
+  </div>
 
-    <section class="layout">
-      <section class="card input-card">
-        <h2>入力</h2>
+  <main class="app-shell">
+    <aside class="control-panel card">
+      <div class="brand">
+        <p class="badge">DELUSIONAL KPI LAB</p>
+        <h1>自称年収<br>シミュレーター</h1>
+        <p>
+          実決済なし。証明機能なし。ネタ用ステータスを生成するだけの仮想ダッシュボード。
+        </p>
+      </div>
 
+      <div class="form-area">
         <label for="nickname">名前・ニックネーム</label>
         <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
 
-        <label for="loops">疑似取引回数</label>
+        <label for="loops">妄想KPI回転数</label>
         <input id="loops" type="number" min="1" max="100000000" value="1000000">
 
-        <label for="unit">1回あたりのネタ取引額</label>
-        <select id="unit">
-          <option value="1">1円</option>
-          <option value="10">10円</option>
-          <option value="100">100円</option>
-          <option value="1000">1,000円</option>
-          <option value="10000">10,000円</option>
+        <label for="unitAmount">1回あたりのネタ値</label>
+        <input id="unitAmount" type="number" min="1" max="100000000" value="1">
+
+        <label for="unitName">表示単位</label>
+        <select id="unitName">
+          <option value="円">円</option>
+          <option value="ペリカ">ペリカ</option>
+          <option value="ゴールド">ゴールド</option>
+          <option value="宇宙クレジット">宇宙クレジット</option>
+          <option value="徳">徳</option>
         </select>
 
         <label for="days">ネタ活動日数</label>
         <input id="days" type="number" min="1" max="366" value="365">
 
-        <button id="calcButton" type="button">自称ステータスを生成</button>
+        <button id="calcButton" type="button">妄想ステータスを生成</button>
         <button id="resetButton" class="ghost" type="button">リセット</button>
-      </section>
-
-      <section class="card result-card" aria-live="polite">
-        <p class="small">あなたの自称年収</p>
-        <div id="resultAmount">---</div>
-        <p id="rankBadge" class="rank-badge">未生成</p>
-        <p id="resultText" class="result-text">数値を入力して生成してください。</p>
-      </section>
-    </section>
-
-    <section class="stats-grid">
-      <article class="stat-card">
-        <p>自称月収</p>
-        <strong id="monthlyAmount">---</strong>
-      </article>
-      <article class="stat-card">
-        <p>自称日給</p>
-        <strong id="dailyAmount">---</strong>
-      </article>
-      <article class="stat-card">
-        <p>自称時給</p>
-        <strong id="hourlyAmount">---</strong>
-      </article>
-      <article class="stat-card">
-        <p>仮想取引回数</p>
-        <strong id="loopCount">---</strong>
-      </article>
-    </section>
-
-    <section class="card profile-card">
-      <div>
-        <p class="small">ネタ用プロフィールカード</p>
-        <h2 id="profileName">---</h2>
-        <p id="profileSummary">まだ生成されていません。</p>
       </div>
-      <div class="stamp">JOKE<br>ONLY</div>
-    </section>
+    </aside>
 
-    <section class="card chart-card">
-      <div class="section-header">
-        <div>
-          <p class="small">仮想推移</p>
-          <h2>ネタ用シミュレーション推移</h2>
+    <section class="dashboard">
+      <section class="hero-card card watermark-container" aria-live="polite">
+        <div class="watermark-bg">JOKE ONLY SIMULATION</div>
+        <div class="hero-content">
+          <p class="small">妄想年間総売上</p>
+          <div id="resultAmount" class="mega-number">---</div>
+          <p id="rankBadge" class="rank-badge">未生成</p>
+          <p id="resultText" class="result-text">左の入力欄からネタ用ステータスを生成してください。</p>
         </div>
-      </div>
-      <div id="barChart" class="bar-chart" aria-label="ネタ用シミュレーション推移"></div>
-    </section>
+      </section>
 
-    <section class="card share-card">
-      <h2>SNS用ネタ文</h2>
-      <textarea id="shareText" readonly>生成後にここへ表示されます。</textarea>
-      <button id="copyButton" type="button">コピー</button>
-    </section>
+      <section class="stats-grid">
+        <article class="stat-card">
+          <p>自称月収</p>
+          <strong id="monthlyAmount">---</strong>
+        </article>
+        <article class="stat-card">
+          <p>脳内日次収益</p>
+          <strong id="dailyAmount">---</strong>
+        </article>
+        <article class="stat-card">
+          <p>自称秒給</p>
+          <strong id="secondlyAmount">---</strong>
+        </article>
+        <article class="stat-card">
+          <p>瞬き1回あたり</p>
+          <strong id="blinkAmount">---</strong>
+        </article>
+        <article class="stat-card">
+          <p>妄想KPI回転数</p>
+          <strong id="loopCount">---</strong>
+        </article>
+        <article class="stat-card">
+          <p>架空国家予算比</p>
+          <strong id="budgetRatio">---</strong>
+        </article>
+      </section>
 
-    <section class="warning">
-      <h2>重要な注意</h2>
-      <ul>
-        <li>このサイトはジョーク用です。</li>
-        <li>実際の年収・売上・所得・利益・納税額を示すものではありません。</li>
-        <li>信用審査、契約、税務申告、就職、融資、商談などには使えません。</li>
-        <li>実決済、領収書、請求書、収入証明の生成機能はありません。</li>
-      </ul>
+      <section class="split-grid">
+        <article class="card profile-card">
+          <div>
+            <p class="small">仮想エージェント・ステータス</p>
+            <h2 id="profileName">---</h2>
+            <p id="profileSummary">まだ生成されていません。</p>
+          </div>
+          <div class="stamp">JOKE<br>ONLY</div>
+        </article>
+
+        <article class="card share-card">
+          <p class="small">SNS用ネタ文</p>
+          <h2>スクショ前提の免責つき投稿文</h2>
+          <textarea id="shareText" readonly>生成後にここへ表示されます。</textarea>
+          <button id="copyButton" type="button">コピー</button>
+        </article>
+      </section>
+
+      <section class="card chart-card">
+        <div class="section-header">
+          <div>
+            <p class="small">仮想推移</p>
+            <h2>ネタ用シミュレーション推移</h2>
+          </div>
+          <p class="micro-note">※現実の収入推移ではありません</p>
+        </div>
+        <div id="barChart" class="bar-chart" aria-label="ネタ用シミュレーション推移"></div>
+      </section>
+
+      <section class="warning card">
+        <h2>重要な注意</h2>
+        <ul>
+          <li>このサイトはジョーク用です。</li>
+          <li>実際の年収・売上・所得・利益・納税額を示すものではありません。</li>
+          <li>信用審査、契約、税務申告、就職、融資、商談などには使えません。</li>
+          <li>実決済、領収書、請求書、収入証明、売上証明の生成機能はありません。</li>
+        </ul>
+      </section>
     </section>
   </main>
 
+  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <div class="loading-modal">
+      <div class="loading-header">
+        <span class="loading-dot"></span>
+        <div>
+          <p class="small">JOKE ONLY / 仮想演出</p>
+          <h2>疑似取引風ループを演出中</h2>
+        </div>
+      </div>
+
+      <div class="loading-ring" aria-hidden="true">
+        <span id="loadingPercent">0%</span>
+      </div>
+
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <ul id="loadingLog" class="loading-log"></ul>
+
+      <p class="loading-disclaimer">
+        これは画面演出です。実際の決済・送金・売上計上・収入発生は一切行われません。
+      </p>
+    </div>
+  </div>
+
   <footer>
-    <p>© 自称年収シミュレーター / Joke only</p>
+    <p>© 自称年収シミュレーター / Joke only / Not real income</p>
   </footer>
 
   <script src="script.js"></script>

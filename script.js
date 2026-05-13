@@ -1,7 +1,9 @@
 const nicknameInput = document.getElementById("nickname");
 const loopsInput = document.getElementById("loops");
-const unitInput = document.getElementById("unit");
+const unitAmountInput = document.getElementById("unitAmount");
+const unitNameInput = document.getElementById("unitName");
 const daysInput = document.getElementById("days");
+
 const calcButton = document.getElementById("calcButton");
 const resetButton = document.getElementById("resetButton");
 const copyButton = document.getElementById("copyButton");
@@ -11,19 +13,39 @@ const rankBadge = document.getElementById("rankBadge");
 const resultText = document.getElementById("resultText");
 const monthlyAmount = document.getElementById("monthlyAmount");
 const dailyAmount = document.getElementById("dailyAmount");
-const hourlyAmount = document.getElementById("hourlyAmount");
+const secondlyAmount = document.getElementById("secondlyAmount");
+const blinkAmount = document.getElementById("blinkAmount");
 const loopCount = document.getElementById("loopCount");
+const budgetRatio = document.getElementById("budgetRatio");
 const profileName = document.getElementById("profileName");
 const profileSummary = document.getElementById("profileSummary");
 const barChart = document.getElementById("barChart");
 const shareText = document.getElementById("shareText");
 
-function formatYen(value) {
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
-    maximumFractionDigits: 0
-  }).format(value);
+const loadingOverlay = document.getElementById("loadingOverlay");
+const loadingPercent = document.getElementById("loadingPercent");
+const progressBar = document.getElementById("progressBar");
+const loadingLog = document.getElementById("loadingLog");
+
+const FAKE_NATIONAL_BUDGET = 112000000000000;
+
+const loadingMessages = [
+  "JOKE ONLY: 仮想ループ環境を起動中",
+  "実決済が発生しないことを確認中",
+  "妄想KPI回転数を読み込み中",
+  "疑似取引風アニメーションを実行中",
+  "現実収入フィルターを適用中",
+  "ウォーターマークを焼き込み中",
+  "自称秒給を無駄に精密計算中",
+  "瞬き1回あたりの謎指標を生成中",
+  "SNS用ネタ文に免責文を挿入中",
+  "仮想ステータスを確定中"
+];
+
+function formatUnit(value, unitName) {
+  const rounded = Math.round(value);
+  const formatted = new Intl.NumberFormat("ja-JP").format(rounded);
+  return `${formatted}${unitName}`;
 }
 
 function formatNumber(value) {
@@ -45,14 +67,14 @@ function judgeRank(value) {
 }
 
 function buildTrend(total) {
-  const ratios = [0.08, 0.16, 0.27, 0.43, 0.66, 1.0];
+  const ratios = [0.06, 0.15, 0.29, 0.47, 0.72, 1.0];
   return ratios.map((ratio, index) => ({
     label: `${index + 1}期`,
     value: Math.round(total * ratio)
   }));
 }
 
-function renderChart(items) {
+function renderChart(items, unitName) {
   const max = Math.max(...items.map((item) => item.value), 1);
   barChart.innerHTML = "";
 
@@ -62,7 +84,7 @@ function renderChart(items) {
 
     const value = document.createElement("div");
     value.className = "bar-value";
-    value.textContent = formatYen(item.value);
+    value.textContent = formatUnit(item.value, unitName);
 
     const fill = document.createElement("div");
     fill.className = "bar-fill";
@@ -77,65 +99,116 @@ function renderChart(items) {
   });
 }
 
-function updateDashboard() {
+function setGeneratedValues() {
   const nickname = nicknameInput.value.trim() || "あなた";
   const loops = clampNumber(Number(loopsInput.value), 1, 100000000);
-  const unit = Number(unitInput.value);
+  const unitAmount = clampNumber(Number(unitAmountInput.value), 1, 100000000);
+  const unitName = unitNameInput.value;
   const days = clampNumber(Number(daysInput.value), 1, 366);
 
   loopsInput.value = loops;
+  unitAmountInput.value = unitAmount;
   daysInput.value = days;
 
-  const fakeRevenue = loops * unit;
+  const fakeRevenue = loops * unitAmount;
   const monthly = fakeRevenue / 12;
   const daily = fakeRevenue / days;
-  const hourly = daily / 8;
+  const secondly = daily / 86400;
+  const blink = secondly * 3;
   const rank = judgeRank(fakeRevenue);
+  const budgetPercent = (fakeRevenue / FAKE_NATIONAL_BUDGET) * 100;
 
-  resultAmount.textContent = formatYen(fakeRevenue);
+  document.body.classList.toggle("gold-mode", fakeRevenue >= 100000000);
+
+  resultAmount.textContent = formatUnit(fakeRevenue, unitName);
   rankBadge.textContent = rank;
   resultText.textContent =
-    `${nickname}さんのネタ用自称年収は ${formatYen(fakeRevenue)} です。` +
+    `${nickname}さんの妄想年間総売上は ${formatUnit(fakeRevenue, unitName)} です。` +
     "これは仮想計算によるジョーク表示であり、実際の収入・売上・所得ではありません。";
 
-  monthlyAmount.textContent = formatYen(monthly);
-  dailyAmount.textContent = formatYen(daily);
-  hourlyAmount.textContent = formatYen(hourly);
+  monthlyAmount.textContent = formatUnit(monthly, unitName);
+  dailyAmount.textContent = formatUnit(daily, unitName);
+  secondlyAmount.textContent = formatUnit(secondly, unitName);
+  blinkAmount.textContent = formatUnit(blink, unitName);
   loopCount.textContent = `${formatNumber(loops)}回`;
+  budgetRatio.textContent = `${budgetPercent.toFixed(10)}%`;
 
   profileName.textContent = nickname;
   profileSummary.textContent =
-    `ステータス：${rank}。仮想取引回数 ${formatNumber(loops)}回、` +
-    `1回あたり ${formatYen(unit)} のネタ計算によるプロフィールです。`;
+    `ステータス：${rank}。妄想KPI回転数 ${formatNumber(loops)}回、` +
+    `1回あたり ${formatUnit(unitAmount, unitName)} のネタ計算による仮想プロフィールです。`;
 
   shareText.value =
-    `私は仮想世界で自称年収 ${formatYen(fakeRevenue)} を突破しました。\n` +
+    `私は仮想世界で妄想年間総売上 ${formatUnit(fakeRevenue, unitName)} を突破しました。\n` +
     `ランク：${rank}\n` +
-    "※これはジョーク用の仮想表示であり、現実の収入ではありません。";
+    "※これはジョーク用の仮想表示であり、現実の収入・売上・所得ではありません。";
 
-  renderChart(buildTrend(fakeRevenue));
+  renderChart(buildTrend(fakeRevenue), unitName);
+}
+
+function runFakeLoadingThenGenerate() {
+  calcButton.disabled = true;
+  loadingOverlay.classList.add("is-active");
+  loadingOverlay.setAttribute("aria-hidden", "false");
+  loadingLog.innerHTML = "";
+  progressBar.style.width = "0%";
+  loadingPercent.textContent = "0%";
+
+  let step = 0;
+  const totalSteps = loadingMessages.length;
+
+  const timer = setInterval(() => {
+    step += 1;
+    const percent = Math.min(100, Math.round((step / totalSteps) * 100));
+
+    progressBar.style.width = `${percent}%`;
+    loadingPercent.textContent = `${percent}%`;
+
+    const item = document.createElement("li");
+    item.textContent = loadingMessages[step - 1];
+    loadingLog.prepend(item);
+
+    while (loadingLog.children.length > 5) {
+      loadingLog.removeChild(loadingLog.lastElementChild);
+    }
+
+    if (step >= totalSteps) {
+      clearInterval(timer);
+      setTimeout(() => {
+        setGeneratedValues();
+        loadingOverlay.classList.remove("is-active");
+        loadingOverlay.setAttribute("aria-hidden", "true");
+        calcButton.disabled = false;
+      }, 420);
+    }
+  }, 180);
 }
 
 function resetDashboard() {
   nicknameInput.value = "";
   loopsInput.value = 1000000;
-  unitInput.value = "1";
+  unitAmountInput.value = 1;
+  unitNameInput.value = "円";
   daysInput.value = 365;
+
+  document.body.classList.remove("gold-mode");
 
   resultAmount.textContent = "---";
   rankBadge.textContent = "未生成";
-  resultText.textContent = "数値を入力して生成してください。";
+  resultText.textContent = "左の入力欄からネタ用ステータスを生成してください。";
   monthlyAmount.textContent = "---";
   dailyAmount.textContent = "---";
-  hourlyAmount.textContent = "---";
+  secondlyAmount.textContent = "---";
+  blinkAmount.textContent = "---";
   loopCount.textContent = "---";
+  budgetRatio.textContent = "---";
   profileName.textContent = "---";
   profileSummary.textContent = "まだ生成されていません。";
   shareText.value = "生成後にここへ表示されます。";
   barChart.innerHTML = "";
 }
 
-calcButton.addEventListener("click", updateDashboard);
+calcButton.addEventListener("click", runFakeLoadingThenGenerate);
 resetButton.addEventListener("click", resetDashboard);
 
 copyButton.addEventListener("click", async () => {
