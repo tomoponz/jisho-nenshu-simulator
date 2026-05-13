@@ -7,39 +7,96 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="top-warning">
+    ネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
+  </div>
+
   <main class="app">
     <section class="hero">
-      <p class="badge">ネタ用・実収入ではありません</p>
+      <p class="badge">JOKE DASHBOARD</p>
       <h1>自称年収シミュレーター</h1>
       <p class="lead">
-        仮想ポイントをぐるぐる回して、口頭ネタ用の「自称年収」を表示するだけのサイトです。
-        実際の収入・売上・所得・納税額を示すものではありません。
+        仮想ポイントをもとに、口頭ネタ用の「自称年収ステータス」を表示します。
+        実決済・領収書・請求書・収入証明の機能はありません。
       </p>
     </section>
 
-    <section class="card">
-      <label for="nickname">名前・ニックネーム</label>
-      <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
+    <section class="layout">
+      <section class="card input-card">
+        <h2>入力</h2>
 
-      <label for="loops">疑似取引回数</label>
-      <input id="loops" type="number" min="1" max="100000000" value="1000000">
+        <label for="nickname">名前・ニックネーム</label>
+        <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
 
-      <label for="unit">1回あたりのネタ取引額</label>
-      <select id="unit">
-        <option value="1">1円</option>
-        <option value="10">10円</option>
-        <option value="100">100円</option>
-        <option value="1000">1,000円</option>
-        <option value="10000">10,000円</option>
-      </select>
+        <label for="loops">疑似取引回数</label>
+        <input id="loops" type="number" min="1" max="100000000" value="1000000">
 
-      <button id="calcButton" type="button">自称年収を生成</button>
+        <label for="unit">1回あたりのネタ取引額</label>
+        <select id="unit">
+          <option value="1">1円</option>
+          <option value="10">10円</option>
+          <option value="100">100円</option>
+          <option value="1000">1,000円</option>
+          <option value="10000">10,000円</option>
+        </select>
+
+        <label for="days">ネタ活動日数</label>
+        <input id="days" type="number" min="1" max="366" value="365">
+
+        <button id="calcButton" type="button">自称ステータスを生成</button>
+        <button id="resetButton" class="ghost" type="button">リセット</button>
+      </section>
+
+      <section class="card result-card" aria-live="polite">
+        <p class="small">あなたの自称年収</p>
+        <div id="resultAmount">---</div>
+        <p id="rankBadge" class="rank-badge">未生成</p>
+        <p id="resultText" class="result-text">数値を入力して生成してください。</p>
+      </section>
     </section>
 
-    <section class="result card" aria-live="polite">
-      <p class="small">あなたの自称年収</p>
-      <div id="resultAmount">---</div>
-      <p id="resultText" class="result-text">数値を入力して生成してください。</p>
+    <section class="stats-grid">
+      <article class="stat-card">
+        <p>自称月収</p>
+        <strong id="monthlyAmount">---</strong>
+      </article>
+      <article class="stat-card">
+        <p>自称日給</p>
+        <strong id="dailyAmount">---</strong>
+      </article>
+      <article class="stat-card">
+        <p>自称時給</p>
+        <strong id="hourlyAmount">---</strong>
+      </article>
+      <article class="stat-card">
+        <p>仮想取引回数</p>
+        <strong id="loopCount">---</strong>
+      </article>
+    </section>
+
+    <section class="card profile-card">
+      <div>
+        <p class="small">ネタ用プロフィールカード</p>
+        <h2 id="profileName">---</h2>
+        <p id="profileSummary">まだ生成されていません。</p>
+      </div>
+      <div class="stamp">JOKE<br>ONLY</div>
+    </section>
+
+    <section class="card chart-card">
+      <div class="section-header">
+        <div>
+          <p class="small">仮想推移</p>
+          <h2>ネタ用シミュレーション推移</h2>
+        </div>
+      </div>
+      <div id="barChart" class="bar-chart" aria-label="ネタ用シミュレーション推移"></div>
+    </section>
+
+    <section class="card share-card">
+      <h2>SNS用ネタ文</h2>
+      <textarea id="shareText" readonly>生成後にここへ表示されます。</textarea>
+      <button id="copyButton" type="button">コピー</button>
     </section>
 
     <section class="warning">
@@ -48,7 +105,7 @@
         <li>このサイトはジョーク用です。</li>
         <li>実際の年収・売上・所得・利益・納税額を示すものではありません。</li>
         <li>信用審査、契約、税務申告、就職、融資、商談などには使えません。</li>
-        <li>実決済、領収書、請求書、収入証明書の生成機能はありません。</li>
+        <li>実決済、領収書、請求書、収入証明の生成機能はありません。</li>
       </ul>
     </section>
   </main>
