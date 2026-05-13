@@ -33,7 +33,7 @@ const FAKE_NATIONAL_BUDGET = 112000000000000;
 const loadingMessages = [
   "JOKE ONLY: 仮想ループ環境を起動中",
   "実決済が発生しないことを確認中",
-  "妄想KPI回転数を読み込み中",
+  "仮想KPI回転数を読み込み中",
   "疑似取引風アニメーションを実行中",
   "現実収入フィルターを適用中",
   "JOKE ONLY表示を確認中",
@@ -148,13 +148,41 @@ function setGeneratedValues() {
   renderChart(buildTrend(fakeRevenue), unitName);
 }
 
+function getLoadingPlanByLoops(loops) {
+  const safeLoops = clampNumber(Number(loops), 1, 100000000);
+  const logLoops = Math.log10(safeLoops + 1);
+  const totalMs = Math.round(900 + logLoops * 420);
+  const cappedMs = Math.min(5200, Math.max(1200, totalMs));
+  const intervalMs = Math.max(120, Math.round(cappedMs / loadingMessages.length));
+  return {
+    totalMs: cappedMs,
+    intervalMs,
+    label: `${(cappedMs / 1000).toFixed(1)}秒`
+  };
+}
+
+function animateNumberText(element) {
+  element.classList.remove("count-pop");
+  void element.offsetWidth;
+  element.classList.add("count-pop");
+}
+
 function runFakeLoadingThenGenerate() {
+  const loopsForDuration = clampNumber(Number(loopsInput.value), 1, 100000000);
+  const loadingPlan = getLoadingPlanByLoops(loopsForDuration);
+  const durationHint = document.getElementById("loadingDurationHint");
+
   calcButton.disabled = true;
   loadingOverlay.classList.add("is-active");
   loadingOverlay.setAttribute("aria-hidden", "false");
   loadingLog.innerHTML = "";
   progressBar.style.width = "0%";
   loadingPercent.textContent = "0%";
+
+  if (durationHint) {
+    durationHint.textContent =
+      `仮想KPI回転数 ${formatNumber(loopsForDuration)}回に応じて、約${loadingPlan.label}の演出を実行します。`;
+  }
 
   let step = 0;
   const totalSteps = loadingMessages.length;
@@ -167,7 +195,8 @@ function runFakeLoadingThenGenerate() {
     loadingPercent.textContent = `${percent}%`;
 
     const item = document.createElement("li");
-    item.textContent = loadingMessages[step - 1];
+    const loopChunk = Math.max(1, Math.round((loopsForDuration / totalSteps) * step));
+    item.textContent = `${loadingMessages[step - 1]} / 仮想処理 ${formatNumber(loopChunk)}回`;
     loadingLog.prepend(item);
 
     while (loadingLog.children.length > 5) {
@@ -178,12 +207,24 @@ function runFakeLoadingThenGenerate() {
       clearInterval(timer);
       setTimeout(() => {
         setGeneratedValues();
+
+        [
+          resultAmount,
+          heroMiniAmount,
+          monthlyAmount,
+          dailyAmount,
+          secondlyAmount,
+          blinkAmount,
+          loopCount,
+          budgetRatio
+        ].forEach((element) => animateNumberText(element));
+
         loadingOverlay.classList.remove("is-active");
         loadingOverlay.setAttribute("aria-hidden", "true");
         calcButton.disabled = false;
       }, 380);
     }
-  }, 165);
+  }, loadingPlan.intervalMs);
 }
 
 function resetDashboard() {
@@ -231,6 +272,29 @@ copyButton.addEventListener("click", async () => {
     shareText.select();
     document.execCommand("copy");
   }
+});
+
+
+// Preset chips for richer interaction
+document.querySelectorAll(".preset-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const loops = chip.dataset.loops;
+    if (!loops) return;
+    loopsInput.value = loops;
+  });
+});
+
+// AOS-like scroll animation
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("is-visible");
+    fadeObserver.unobserve(entry.target);
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll(".fade-up").forEach((element) => {
+  fadeObserver.observe(element);
 });
 
 resetDashboard();
