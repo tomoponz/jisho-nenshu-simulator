@@ -9,6 +9,7 @@ const resetButton = document.getElementById("resetButton");
 const copyButton = document.getElementById("copyButton");
 
 const resultAmount = document.getElementById("resultAmount");
+const heroMiniAmount = document.getElementById("heroMiniAmount");
 const rankBadge = document.getElementById("rankBadge");
 const resultText = document.getElementById("resultText");
 const monthlyAmount = document.getElementById("monthlyAmount");
@@ -35,7 +36,7 @@ const loadingMessages = [
   "妄想KPI回転数を読み込み中",
   "疑似取引風アニメーションを実行中",
   "現実収入フィルターを適用中",
-  "ウォーターマークを焼き込み中",
+  "JOKE ONLY表示を確認中",
   "自称秒給を無駄に精密計算中",
   "瞬き1回あたりの謎指標を生成中",
   "SNS用ネタ文に免責文を挿入中",
@@ -88,7 +89,7 @@ function renderChart(items, unitName) {
 
     const fill = document.createElement("div");
     fill.className = "bar-fill";
-    fill.style.height = `${Math.max(8, (item.value / max) * 150)}px`;
+    fill.style.height = `${Math.max(8, (item.value / max) * 160)}px`;
 
     const label = document.createElement("div");
     label.className = "bar-label";
@@ -118,12 +119,13 @@ function setGeneratedValues() {
   const rank = judgeRank(fakeRevenue);
   const budgetPercent = (fakeRevenue / FAKE_NATIONAL_BUDGET) * 100;
 
-  document.body.classList.toggle("gold-mode", fakeRevenue >= 100000000);
+  const formattedRevenue = formatUnit(fakeRevenue, unitName);
 
-  resultAmount.textContent = formatUnit(fakeRevenue, unitName);
+  resultAmount.textContent = formattedRevenue;
+  heroMiniAmount.textContent = formattedRevenue;
   rankBadge.textContent = rank;
   resultText.textContent =
-    `${nickname}さんの妄想年間総売上は ${formatUnit(fakeRevenue, unitName)} です。` +
+    `${nickname}さんの妄想年間総売上は ${formattedRevenue} です。` +
     "これは仮想計算によるジョーク表示であり、実際の収入・売上・所得ではありません。";
 
   monthlyAmount.textContent = formatUnit(monthly, unitName);
@@ -139,7 +141,7 @@ function setGeneratedValues() {
     `1回あたり ${formatUnit(unitAmount, unitName)} のネタ計算による仮想プロフィールです。`;
 
   shareText.value =
-    `私は仮想世界で妄想年間総売上 ${formatUnit(fakeRevenue, unitName)} を突破しました。\n` +
+    `私は仮想世界で妄想年間総売上 ${formattedRevenue} を突破しました。\n` +
     `ランク：${rank}\n` +
     "※これはジョーク用の仮想表示であり、現実の収入・売上・所得ではありません。";
 
@@ -179,9 +181,9 @@ function runFakeLoadingThenGenerate() {
         loadingOverlay.classList.remove("is-active");
         loadingOverlay.setAttribute("aria-hidden", "true");
         calcButton.disabled = false;
-      }, 420);
+      }, 380);
     }
-  }, 180);
+  }, 165);
 }
 
 function resetDashboard() {
@@ -191,11 +193,10 @@ function resetDashboard() {
   unitNameInput.value = "円";
   daysInput.value = 365;
 
-  document.body.classList.remove("gold-mode");
-
   resultAmount.textContent = "---";
+  heroMiniAmount.textContent = "---";
   rankBadge.textContent = "未生成";
-  resultText.textContent = "左の入力欄からネタ用ステータスを生成してください。";
+  resultText.textContent = "入力後にネタ用ステータスが表示されます。";
   monthlyAmount.textContent = "---";
   dailyAmount.textContent = "---";
   secondlyAmount.textContent = "---";
@@ -210,6 +211,14 @@ function resetDashboard() {
 
 calcButton.addEventListener("click", runFakeLoadingThenGenerate);
 resetButton.addEventListener("click", resetDashboard);
+
+document.querySelectorAll(".primary-link, #heroGenerateButton, #headerGenerateButton").forEach((button) => {
+  if (!button) return;
+  button.addEventListener("click", () => {
+    const dashboard = document.getElementById("dashboard");
+    dashboard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
 
 copyButton.addEventListener("click", async () => {
   try {

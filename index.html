@@ -7,96 +7,222 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="global-watermark" aria-hidden="true">
-    <span>JOKE ONLY</span>
-    <span>SIMULATION</span>
-    <span>NOT REAL INCOME</span>
-    <span>JOKE ONLY</span>
-    <span>SIMULATION</span>
-    <span>NOT REAL INCOME</span>
-  </div>
-
   <div class="top-warning">
-    JOKE ONLY / これはネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
+    JOKE ONLY / ネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
   </div>
 
-  <main class="app-shell">
-    <aside class="control-panel card">
-      <div class="brand">
-        <p class="badge">DELUSIONAL KPI LAB</p>
-        <h1>自称年収<br>シミュレーター</h1>
-        <p>
-          実決済なし。証明機能なし。ネタ用ステータスを生成するだけの仮想ダッシュボード。
-        </p>
-      </div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#">
+        <span class="logo-mark">¥?</span>
+        <span>
+          <strong>Jisho Nenshu Lab</strong>
+          <small>Not real income</small>
+        </span>
+      </a>
 
-      <div class="form-area">
-        <label for="nickname">名前・ニックネーム</label>
-        <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
+      <nav class="header-nav" aria-label="サイト内メニュー">
+        <a href="#dashboard">生成</a>
+        <a href="#features">特徴</a>
+        <a href="#how">使い方</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
 
-        <label for="loops">妄想KPI回転数</label>
-        <input id="loops" type="number" min="1" max="100000000" value="1000000">
+  <main>
+    <section class="heroHeader">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">JOKE ONLY SIMULATION</p>
+          <h1>自称年収を<br>無駄に本格的な<br>LP風サイトで表示。</h1>
+          <p class="hero-desc">
+            妄想KPI回転数を入力すると、疑似取引風の読み込み演出を経て、
+            「妄想年間総売上」「自称秒給」「瞬き1回あたり」などのネタ指標を表示します。
+          </p>
 
-        <label for="unitAmount">1回あたりのネタ値</label>
-        <input id="unitAmount" type="number" min="1" max="100000000" value="1">
+          <div class="hero-actions">
+            <a class="primary-link" href="#dashboard">今すぐ生成</a>
+            <a class="secondary-link" href="#features">安全設計を見る</a>
+          </div>
 
-        <label for="unitName">表示単位</label>
-        <select id="unitName">
-          <option value="円">円</option>
-          <option value="ペリカ">ペリカ</option>
-          <option value="ゴールド">ゴールド</option>
-          <option value="宇宙クレジット">宇宙クレジット</option>
-          <option value="徳">徳</option>
-        </select>
-
-        <label for="days">ネタ活動日数</label>
-        <input id="days" type="number" min="1" max="366" value="365">
-
-        <button id="calcButton" type="button">妄想ステータスを生成</button>
-        <button id="resetButton" class="ghost" type="button">リセット</button>
-      </div>
-    </aside>
-
-    <section class="dashboard">
-      <section class="hero-card card watermark-container" aria-live="polite">
-        <div class="watermark-bg">JOKE ONLY SIMULATION</div>
-        <div class="hero-content">
-          <p class="small">妄想年間総売上</p>
-          <div id="resultAmount" class="mega-number">---</div>
-          <p id="rankBadge" class="rank-badge">未生成</p>
-          <p id="resultText" class="result-text">左の入力欄からネタ用ステータスを生成してください。</p>
+          <p class="hero-note">
+            実決済なし。収入証明なし。領収書・請求書・税務書類風の出力なし。
+          </p>
         </div>
-      </section>
 
-      <section class="stats-grid">
-        <article class="stat-card">
-          <p>自称月収</p>
-          <strong id="monthlyAmount">---</strong>
-        </article>
-        <article class="stat-card">
-          <p>脳内日次収益</p>
-          <strong id="dailyAmount">---</strong>
-        </article>
-        <article class="stat-card">
-          <p>自称秒給</p>
-          <strong id="secondlyAmount">---</strong>
-        </article>
-        <article class="stat-card">
-          <p>瞬き1回あたり</p>
-          <strong id="blinkAmount">---</strong>
-        </article>
-        <article class="stat-card">
-          <p>妄想KPI回転数</p>
-          <strong id="loopCount">---</strong>
-        </article>
-        <article class="stat-card">
-          <p>架空国家予算比</p>
-          <strong id="budgetRatio">---</strong>
-        </article>
-      </section>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="promo-card">
+            <span class="promo-label">妄想年間総売上</span>
+            <strong id="heroMiniAmount">---</strong>
+            <em>JOKE ONLY</em>
+          </div>
 
-      <section class="split-grid">
-        <article class="card profile-card">
+          <div class="floating-mini mini-a">
+            <span>現実収入反映</span>
+            <strong>0円</strong>
+          </div>
+
+          <div class="floating-mini mini-b">
+            <span>証明用途</span>
+            <strong>不可</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard-section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">CONTROL PANEL</p>
+          <h2>妄想KPIを設定</h2>
+          <p>金融LP風の高級感は残しつつ、常にジョーク表示だと分かる構成にしています。</p>
+        </div>
+
+        <div class="app-grid">
+          <aside class="control-panel">
+            <h3>入力</h3>
+
+            <label for="nickname">名前・ニックネーム</label>
+            <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
+
+            <label for="loops">妄想KPI回転数</label>
+            <input id="loops" type="number" min="1" max="100000000" value="1000000">
+
+            <label for="unitAmount">1回あたりのネタ値</label>
+            <input id="unitAmount" type="number" min="1" max="100000000" value="1">
+
+            <label for="unitName">表示単位</label>
+            <select id="unitName">
+              <option value="円">円</option>
+              <option value="ペリカ">ペリカ</option>
+              <option value="ゴールド">ゴールド</option>
+              <option value="宇宙クレジット">宇宙クレジット</option>
+              <option value="徳">徳</option>
+            </select>
+
+            <label for="days">ネタ活動日数</label>
+            <input id="days" type="number" min="1" max="366" value="365">
+
+            <button id="calcButton" type="button">疑似取引風に生成</button>
+            <button id="resetButton" class="ghost" type="button">リセット</button>
+
+            <p class="panel-note">
+              ※「疑似取引」は画面演出です。決済・送金・売上計上は行われません。
+            </p>
+          </aside>
+
+          <section class="result-panel" aria-live="polite">
+            <div class="result-watermark">JOKE ONLY</div>
+            <p class="small">妄想年間総売上</p>
+            <div id="resultAmount" class="mega-number">---</div>
+            <p id="rankBadge" class="rank-badge">未生成</p>
+            <p id="resultText" class="result-text">入力後にネタ用ステータスが表示されます。</p>
+          </section>
+        </div>
+
+        <section class="tradingConditions__wrapper" aria-label="ネタ用KPI一覧">
+          <article class="tradingConditions__item">
+            <p>自称月収</p>
+            <strong id="monthlyAmount">---</strong>
+          </article>
+          <article class="tradingConditions__item">
+            <p>脳内日次収益</p>
+            <strong id="dailyAmount">---</strong>
+          </article>
+          <article class="tradingConditions__item">
+            <p>自称秒給</p>
+            <strong id="secondlyAmount">---</strong>
+          </article>
+          <article class="tradingConditions__item">
+            <p>瞬き1回あたり</p>
+            <strong id="blinkAmount">---</strong>
+          </article>
+          <article class="tradingConditions__item">
+            <p>妄想KPI回転数</p>
+            <strong id="loopCount">---</strong>
+          </article>
+          <article class="tradingConditions__item">
+            <p>架空国家予算比</p>
+            <strong id="budgetRatio">---</strong>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section id="features" class="feature-section">
+      <div class="container">
+        <div class="section-heading light">
+          <p class="eyebrow">SAFE JOKE DESIGN</p>
+          <h2>本格的に見えて、証明書には見えない設計</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span>01</span>
+            <h3>JOKE ONLY表示</h3>
+            <p>結果画面・投稿文・注意欄に、ジョークであることを明記します。</p>
+          </article>
+
+          <article class="feature-card wide">
+            <span>02</span>
+            <h3>疑似取引風ローディング</h3>
+            <p>本格的な処理に見える無駄な読み込み演出を入れつつ、ログには「仮想演出」と明記します。</p>
+          </article>
+
+          <article class="feature-card">
+            <span>03</span>
+            <h3>謎KPIでネタ化</h3>
+            <p>瞬き1回あたり、架空国家予算比など、現実離れした指標を表示します。</p>
+          </article>
+
+          <article class="feature-card">
+            <span>04</span>
+            <h3>証明書風を回避</h3>
+            <p>収入証明・売上証明・請求書・領収書風の見た目や文言は使いません。</p>
+          </article>
+
+          <article class="feature-card accent">
+            <span>05</span>
+            <h3>実決済なし</h3>
+            <p>決済、送金、チャージ、残高、出金などの機能は存在しません。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="steps-section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">HOW IT WORKS</p>
+          <h2>使い方は3ステップ</h2>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card">
+            <span>01</span>
+            <h3>妄想KPIを入力</h3>
+            <p>回転数、単位、活動日数を入力します。現実の売上や収入とは無関係です。</p>
+          </article>
+
+          <article class="step-card">
+            <span>02</span>
+            <h3>疑似取引風ローディング</h3>
+            <p>画面演出として仮想ログを流します。決済処理は一切ありません。</p>
+          </article>
+
+          <article class="step-card">
+            <span>03</span>
+            <h3>SNS用ネタ文をコピー</h3>
+            <p>免責文つきの投稿文を生成します。証明用途では使えません。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-share-section">
+      <div class="container profile-share-grid">
+        <article class="profile-card">
           <div>
             <p class="small">仮想エージェント・ステータス</p>
             <h2 id="profileName">---</h2>
@@ -105,34 +231,50 @@
           <div class="stamp">JOKE<br>ONLY</div>
         </article>
 
-        <article class="card share-card">
+        <article class="share-card">
           <p class="small">SNS用ネタ文</p>
-          <h2>スクショ前提の免責つき投稿文</h2>
+          <h2>免責つき投稿文</h2>
           <textarea id="shareText" readonly>生成後にここへ表示されます。</textarea>
           <button id="copyButton" type="button">コピー</button>
         </article>
-      </section>
+      </div>
+    </section>
 
-      <section class="card chart-card">
-        <div class="section-header">
-          <div>
-            <p class="small">仮想推移</p>
+    <section class="chart-section">
+      <div class="container">
+        <div class="chart-card">
+          <div class="section-heading compact">
+            <p class="eyebrow">SIMULATION TREND</p>
             <h2>ネタ用シミュレーション推移</h2>
+            <p>現実の収入推移ではありません。</p>
           </div>
-          <p class="micro-note">※現実の収入推移ではありません</p>
+          <div id="barChart" class="bar-chart" aria-label="ネタ用シミュレーション推移"></div>
         </div>
-        <div id="barChart" class="bar-chart" aria-label="ネタ用シミュレーション推移"></div>
-      </section>
+      </div>
+    </section>
 
-      <section class="warning card">
-        <h2>重要な注意</h2>
-        <ul>
-          <li>このサイトはジョーク用です。</li>
-          <li>実際の年収・売上・所得・利益・納税額を示すものではありません。</li>
-          <li>信用審査、契約、税務申告、就職、融資、商談などには使えません。</li>
-          <li>実決済、領収書、請求書、収入証明、売上証明の生成機能はありません。</li>
-        </ul>
-      </section>
+    <section id="faq" class="faq-section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>よくある注意</h2>
+        </div>
+
+        <div class="faq-list">
+          <details open>
+            <summary>これは実際の年収ですか？</summary>
+            <p>違います。ジョーク用の仮想表示です。実際の収入・売上・所得・納税額を示すものではありません。</p>
+          </details>
+          <details>
+            <summary>契約や審査に使えますか？</summary>
+            <p>使えません。信用審査、契約、税務申告、就職、融資、商談などには使用できません。</p>
+          </details>
+          <details>
+            <summary>疑似取引は実際に行われますか？</summary>
+            <p>行われません。読み込みやログは演出であり、決済・送金・売上計上は一切ありません。</p>
+          </details>
+        </div>
+      </div>
     </section>
   </main>
 
