@@ -41,11 +41,11 @@
       <div class="container hero-grid">
         <div class="hero-copy fade-up">
           <p class="eyebrow">JOKE ONLY SIMULATION</p>
-          <h1>自称年収を<br>本格的に<br>圧倒的表示。</h1>
+          <h1>自称年収を<br>無駄に本格的に<br>圧倒的表示。</h1>
           <p class="hero-desc">
             仮想KPI回転数を入力すると、疑似取引風の読み込み演出を経て、
             「仮想年間総売上」「自称秒給」「瞬き1回あたり」などの指標を表示します。
-            サイトから受け取った仮想1円をそのまま返すようなループを演出します。
+            ネタ上の設定として、サイトから受け取った仮想1円をそのまま返すようなループを演出しますが、現実の支払い・送金・売上計上は一切行われません。
           </p>
 
           <div class="hero-actions">
@@ -113,7 +113,7 @@
             </div>
 
             <label for="nickname">名前・ニックネーム</label>
-            <input id="nickname" type="text" placeholder="例：ゆうと" maxlength="30">
+            <input id="nickname" type="text" placeholder="例：ニックネーム" maxlength="30">
 
             <label for="loops">仮想KPI回転数</label>
             <input id="loops" type="number" min="1" max="100000000" value="1000000">
@@ -351,9 +351,10 @@
 
       <ul id="loadingLog" class="loading-log"></ul>
 
-      <p id="loadingDurationHint" class="loading-duration-hint">
-        回転数に応じて演出時間が変化します。
-      </p>
+      <div class="loading-estimate">
+        <p id="loadingDurationHint">回転数に応じてガチ寄りの長時間演出に変化します。</p>
+        <p id="realisticTimeHint">仮に1回0.2秒なら、現実的な所要時間をここに表示します。</p>
+      </div>
 
       <p class="loading-disclaimer">
         これは画面演出です。実際の決済・送金・売上計上・収入発生は一切行われません。

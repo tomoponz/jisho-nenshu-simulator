@@ -1557,3 +1557,44 @@ details:hover {
     transform: none;
   }
 }
+
+
+/* === Realistic loading estimate upgrade === */
+.loading-estimate {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(32, 163, 58, .08);
+  border: 1px solid rgba(32, 163, 58, .16);
+}
+
+.loading-estimate p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+  font-weight: 800;
+  text-align: left;
+}
+
+#realisticTimeHint {
+  color: #333b45;
+}
+
+.loading-disclaimer {
+  margin-top: 12px;
+}
+
+
+/* === Longer loading mode note === */
+.loading-modal {
+  max-height: min(92vh, 760px);
+}
+
+.loading-log {
+  max-height: 190px;
+}

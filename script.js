@@ -148,16 +148,61 @@ function setGeneratedValues() {
   renderChart(buildTrend(fakeRevenue), unitName);
 }
 
+function formatDurationFromSeconds(totalSeconds) {
+  const seconds = Math.max(1, Math.round(totalSeconds));
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const parts = [];
+  if (days) parts.push(`${formatNumber(days)}日`);
+  if (hours) parts.push(`${hours}時間`);
+  if (minutes) parts.push(`${minutes}分`);
+  if (secs && parts.length < 2) parts.push(`${secs}秒`);
+
+  return parts.slice(0, 3).join("") || "1秒未満";
+}
+
+function formatDurationFromSeconds(totalSeconds) {
+  const seconds = Math.max(1, Math.round(totalSeconds));
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const parts = [];
+  if (days) parts.push(`${formatNumber(days)}日`);
+  if (hours) parts.push(`${hours}時間`);
+  if (minutes) parts.push(`${minutes}分`);
+  if (secs && parts.length < 2) parts.push(`${secs}秒`);
+
+  return parts.slice(0, 3).join("") || "1秒未満";
+}
+
 function getLoadingPlanByLoops(loops) {
   const safeLoops = clampNumber(Number(loops), 1, 100000000);
   const logLoops = Math.log10(safeLoops + 1);
-  const totalMs = Math.round(900 + logLoops * 420);
-  const cappedMs = Math.min(5200, Math.max(1200, totalMs));
-  const intervalMs = Math.max(120, Math.round(cappedMs / loadingMessages.length));
+
+  // ガチ寄りの演出時間。
+  // 目安:
+  // 1万回      -> 約1.5分
+  // 100万回    -> 約5分
+  // 1億回      -> 約12分
+  // ただしブラウザ操作不能を避けるため、最大20分で止める。
+  const intenseMs = Math.round(1200 + Math.pow(logLoops, 3) * 1400);
+  const cappedMs = Math.min(20 * 60 * 1000, Math.max(2000, intenseMs));
+
+  // 「現実に1件ずつ処理したらどれくらいか」のネタ用推定。
+  // あくまで仮定として、1回あたり0.2秒で計算する。
+  const assumedSecondsPerLoop = 0.2;
+  const realisticSeconds = safeLoops * assumedSecondsPerLoop;
+
   return {
+    loops: safeLoops,
     totalMs: cappedMs,
-    intervalMs,
-    label: `${(cappedMs / 1000).toFixed(1)}秒`
+    label: `${(cappedMs / 1000).toFixed(1)}秒`,
+    realisticLabel: formatDurationFromSeconds(realisticSeconds)
   };
 }
 
@@ -171,6 +216,7 @@ function runFakeLoadingThenGenerate() {
   const loopsForDuration = clampNumber(Number(loopsInput.value), 1, 100000000);
   const loadingPlan = getLoadingPlanByLoops(loopsForDuration);
   const durationHint = document.getElementById("loadingDurationHint");
+  const realisticTimeHint = document.getElementById("realisticTimeHint");
 
   calcButton.disabled = true;
   loadingOverlay.classList.add("is-active");
@@ -181,50 +227,88 @@ function runFakeLoadingThenGenerate() {
 
   if (durationHint) {
     durationHint.textContent =
-      `仮想KPI回転数 ${formatNumber(loopsForDuration)}回に応じて、約${loadingPlan.label}の演出を実行します。`;
+      `仮想KPI回転数 ${formatNumber(loopsForDuration)}回に応じて、約${loadingPlan.label}の長時間演出を実行します。`;
   }
 
-  let step = 0;
-  const totalSteps = loadingMessages.length;
+  if (realisticTimeHint) {
+    realisticTimeHint.textContent =
+      `仮に1回0.2秒で1件ずつ処理すると、現実的な所要時間は約${loadingPlan.realisticLabel}です。画面では長めの短縮演出にしています。`;
+  }
 
-  const timer = setInterval(() => {
-    step += 1;
-    const percent = Math.min(100, Math.round((step / totalSteps) * 100));
+  const startTime = performance.now();
+  const totalMs = loadingPlan.totalMs;
+  const logInterval = Math.max(900, totalMs / loadingMessages.length);
+  let nextLogAt = 0;
+  let logIndex = 0;
+  let animationFrameId = null;
 
-    progressBar.style.width = `${percent}%`;
-    loadingPercent.textContent = `${percent}%`;
+  function pushLog(elapsedMs) {
+    const progressRatio = Math.min(1, elapsedMs / totalMs);
+    const virtualProcessed = Math.max(1, Math.round(loopsForDuration * progressRatio));
+    const message = loadingMessages[logIndex % loadingMessages.length];
 
     const item = document.createElement("li");
-    const loopChunk = Math.max(1, Math.round((loopsForDuration / totalSteps) * step));
-    item.textContent = `${loadingMessages[step - 1]} / 仮想処理 ${formatNumber(loopChunk)}回`;
+    item.textContent = `${message} / 仮想処理 ${formatNumber(virtualProcessed)}回`;
     loadingLog.prepend(item);
 
     while (loadingLog.children.length > 5) {
       loadingLog.removeChild(loadingLog.lastElementChild);
     }
 
-    if (step >= totalSteps) {
-      clearInterval(timer);
-      setTimeout(() => {
-        setGeneratedValues();
+    logIndex += 1;
+  }
 
-        [
-          resultAmount,
-          heroMiniAmount,
-          monthlyAmount,
-          dailyAmount,
-          secondlyAmount,
-          blinkAmount,
-          loopCount,
-          budgetRatio
-        ].forEach((element) => animateNumberText(element));
-
-        loadingOverlay.classList.remove("is-active");
-        loadingOverlay.setAttribute("aria-hidden", "true");
-        calcButton.disabled = false;
-      }, 380);
+  function finishLoading() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
     }
-  }, loadingPlan.intervalMs);
+
+    progressBar.style.width = "100%";
+    loadingPercent.textContent = "100%";
+
+    setTimeout(() => {
+      setGeneratedValues();
+
+      [
+        resultAmount,
+        heroMiniAmount,
+        monthlyAmount,
+        dailyAmount,
+        secondlyAmount,
+        blinkAmount,
+        loopCount,
+        budgetRatio
+      ].forEach((element) => animateNumberText(element));
+
+      loadingOverlay.classList.remove("is-active");
+      loadingOverlay.setAttribute("aria-hidden", "true");
+      calcButton.disabled = false;
+    }, 380);
+  }
+
+  function tick(now) {
+    const elapsedMs = now - startTime;
+    const progress = Math.min(1, elapsedMs / totalMs);
+    const percent = Math.min(100, Math.floor(progress * 100));
+
+    progressBar.style.width = `${percent}%`;
+    loadingPercent.textContent = `${percent}%`;
+
+    if (elapsedMs >= nextLogAt) {
+      pushLog(elapsedMs);
+      nextLogAt += logInterval;
+    }
+
+    if (progress >= 1) {
+      finishLoading();
+      return;
+    }
+
+    animationFrameId = requestAnimationFrame(tick);
+  }
+
+  pushLog(0);
+  animationFrameId = requestAnimationFrame(tick);
 }
 
 function resetDashboard() {
