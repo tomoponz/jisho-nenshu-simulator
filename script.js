@@ -131,8 +131,8 @@ function setGeneratedValues() {
   heroMiniAmount.textContent = formattedRevenue;
   rankBadge.textContent = rank;
   resultText.textContent =
-    `${nickname}さんの妄想年間総売上は ${formattedRevenue} です。` +
-    "これは仮想計算によるジョーク表示であり、実際の収入・売上・所得ではありません。";
+    `${nickname}さんの仮想年商は ${formattedRevenue} です。` +
+    "これは仮想計算によるジョーク表示であり、実際の年商・売上・所得ではありません。";
 
   monthlyAmount.textContent = formatUnit(monthly, unitName);
   dailyAmount.textContent = formatUnit(daily, unitName);
@@ -143,13 +143,13 @@ function setGeneratedValues() {
 
   profileName.textContent = nickname;
   profileSummary.textContent =
-    `ステータス：${rank}。妄想KPI回転数 ${formatNumber(loops)}回、` +
+    `ステータス：${rank}。仮想KPI回転数 ${formatNumber(loops)}回、` +
     `1回あたり ${formatUnit(unitAmount, unitName)} のネタ計算による仮想プロフィールです。`;
 
   shareText.value =
-    `私は仮想世界で妄想年間総売上 ${formattedRevenue} を突破しました。\n` +
+    `私は仮想世界で仮想年商 ${formattedRevenue} を突破しました。\n` +
     `ランク：${rank}\n` +
-    "※これはジョーク用の仮想表示であり、現実の収入・売上・所得ではありません。";
+    "※これはジョーク用の仮想表示であり、現実の年商・売上・所得ではありません。";
 
   renderChart(buildTrend(fakeRevenue), unitName);
 }
@@ -183,18 +183,45 @@ function createSessionCode() {
   return code;
 }
 
-function getLoadingPlanByLoops(loops) {
+function getLoadingPlanByAmount(amount, loops) {
+  const safeAmount = clampNumber(Number(amount), 1, 100000000000);
   const safeLoops = clampNumber(Number(loops), 1, 100000000);
-  const logLoops = Math.log10(safeLoops + 1);
 
-  // ガチ寄りの演出時間。
-  // 目安:
-  // 1万回      -> 約1.5分
-  // 100万回    -> 約5分
-  // 1億回      -> 約12分
-  // 最大20分
-  const intenseMs = Math.round(1200 + Math.pow(logLoops, 3) * 1400);
-  const cappedMs = Math.min(20 * 60 * 1000, Math.max(2000, intenseMs));
+  // 読み込み時間は「仮想年商の金額」を基準に決める。
+  // 100万円以下：数十秒
+  // 1億円：約5分
+  // 10億円以上：最大15分
+  const minAmount = 1000000;       // 100万円
+  const targetAmount = 100000000;  // 1億円
+  const maxAmount = 1000000000;    // 10億円
+
+  const minMs = 30000;             // 30秒
+  const targetMs = 5 * 60 * 1000;  // 5分
+  const maxMs = 15 * 60 * 1000;    // 15分
+
+  let totalMs;
+
+  if (safeAmount <= minAmount) {
+    totalMs = minMs;
+  } else if (safeAmount <= targetAmount) {
+    const ratio =
+      (Math.log10(safeAmount) - Math.log10(minAmount)) /
+      (Math.log10(targetAmount) - Math.log10(minAmount));
+
+    // 指数関数ではなく、対数スケールに少しカーブをかける。
+    // 金額が大きくなるほど、だんだん重くなる感じを出す。
+    const curved = Math.pow(Math.max(0, ratio), 1.35);
+    totalMs = minMs + curved * (targetMs - minMs);
+  } else {
+    const ratio =
+      (Math.log10(safeAmount) - Math.log10(targetAmount)) /
+      (Math.log10(maxAmount) - Math.log10(targetAmount));
+
+    const curved = Math.pow(Math.max(0, ratio), 1.2);
+    totalMs = targetMs + curved * (maxMs - targetMs);
+  }
+
+  const cappedMs = Math.min(maxMs, Math.max(minMs, Math.round(totalMs)));
 
   // 見た目上の処理単位。件数が大きいほどバッチサイズも大きくする。
   const batchSize = Math.max(50, Math.min(50000, Math.round(safeLoops / 180)));
@@ -206,6 +233,7 @@ function getLoadingPlanByLoops(loops) {
 
   return {
     loops: safeLoops,
+    amount: safeAmount,
     totalMs: cappedMs,
     batchSize,
     label: formatDurationFromSeconds(cappedMs / 1000),
@@ -252,7 +280,10 @@ function appendProcessLog({ code, body }) {
 
 function runFakeLoadingThenGenerate() {
   const loopsForDuration = clampNumber(Number(loopsInput.value), 1, 100000000);
-  const loadingPlan = getLoadingPlanByLoops(loopsForDuration);
+  const unitAmountForDuration = clampNumber(Number(unitAmountInput.value), 1, 100000000);
+  const amountForDuration = loopsForDuration * unitAmountForDuration;
+
+  const loadingPlan = getLoadingPlanByAmount(amountForDuration, loopsForDuration);
   const durationHint = document.getElementById("loadingDurationHint");
   const realisticTimeHint = document.getElementById("realisticTimeHint");
   const sessionCode = createSessionCode();
@@ -273,7 +304,7 @@ function runFakeLoadingThenGenerate() {
 
   if (durationHint) {
     durationHint.textContent =
-      `total sequence: ${formatNumber(loopsForDuration)} tx / expected runtime: ${loadingPlan.label}`;
+      `target amount: ${formatUnit(amountForDuration, unitNameInput.value)} / total sequence: ${formatNumber(loopsForDuration)} tx / expected runtime: ${loadingPlan.label}`;
   }
 
   if (realisticTimeHint) {
@@ -292,7 +323,7 @@ function runFakeLoadingThenGenerate() {
 
   appendProcessLog({
     code: "INIT",
-    body: `session=${sessionCode} queue=annual-kpi batch=${formatNumber(loadingPlan.batchSize)}`
+    body: `session=${sessionCode} queue=annual-kpi target=${formatUnit(amountForDuration, unitNameInput.value)} batch=${formatNumber(loadingPlan.batchSize)}`
   });
 
   function finishLoading() {
@@ -310,7 +341,7 @@ function runFakeLoadingThenGenerate() {
 
     appendProcessLog({
       code: "FINAL",
-      body: `processed=${formatNumber(loopsForDuration)} status=committed checksum=ok snapshot=ready`
+      body: `processed=${formatNumber(loopsForDuration)} target=${formatUnit(amountForDuration, unitNameInput.value)} status=committed checksum=ok snapshot=ready`
     });
 
     setTimeout(() => {
@@ -364,7 +395,7 @@ function runFakeLoadingThenGenerate() {
       const latency = Math.max(8, Math.round(18 + Math.random() * 42 - progress * 10));
       const shard = String((logIndex % 8) + 1).padStart(2, "0");
       const body =
-        `${stage.text}; cursor=${formatNumber(cursor)} tx; shard=${shard}; latency=${latency}ms; rate=${formatNumber(throughput)}tx/s`;
+        `${stage.text}; cursor=${formatNumber(cursor)} tx; target=${formatUnit(amountForDuration, unitNameInput.value)}; shard=${shard}; latency=${latency}ms; rate=${formatNumber(throughput)}tx/s`;
 
       appendProcessLog({
         code: stage.code,
@@ -432,7 +463,6 @@ copyButton.addEventListener("click", async () => {
     document.execCommand("copy");
   }
 });
-
 
 // Preset chips for richer interaction
 document.querySelectorAll(".preset-chip").forEach((chip) => {
