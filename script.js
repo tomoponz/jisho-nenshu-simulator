@@ -27,20 +27,26 @@ const loadingOverlay = document.getElementById("loadingOverlay");
 const loadingPercent = document.getElementById("loadingPercent");
 const progressBar = document.getElementById("progressBar");
 const loadingLog = document.getElementById("loadingLog");
+const sessionId = document.getElementById("sessionId");
+const queueState = document.getElementById("queueState");
+const processedCount = document.getElementById("processedCount");
+const throughputValue = document.getElementById("throughputValue");
+const etaValue = document.getElementById("etaValue");
+const batchValue = document.getElementById("batchValue");
 
 const FAKE_NATIONAL_BUDGET = 112000000000000;
 
-const loadingMessages = [
-  "JOKE ONLY: 仮想ループ環境を起動中",
-  "実決済が発生しないことを確認中",
-  "仮想KPI回転数を読み込み中",
-  "疑似取引風アニメーションを実行中",
-  "現実収入フィルターを適用中",
-  "JOKE ONLY表示を確認中",
-  "自称秒給を無駄に精密計算中",
-  "瞬き1回あたりの謎指標を生成中",
-  "SNS用ネタ文に免責文を挿入中",
-  "仮想ステータスを確定中"
+const processStages = [
+  { code: "INIT", text: "session context initialized" },
+  { code: "AUTH", text: "request signature checked" },
+  { code: "ALLOC", text: "queue partition allocated" },
+  { code: "BATCH", text: "batch window opened" },
+  { code: "SEQ", text: "sequence cursor advanced" },
+  { code: "LEDGER", text: "ledger rows staged" },
+  { code: "VERIFY", text: "integrity checksum verified" },
+  { code: "RECON", text: "reconciliation pass completed" },
+  { code: "COMMIT", text: "batch commit marker written" },
+  { code: "FINAL", text: "result snapshot finalized" }
 ];
 
 function formatUnit(value, unitName) {
@@ -149,7 +155,7 @@ function setGeneratedValues() {
 }
 
 function formatDurationFromSeconds(totalSeconds) {
-  const seconds = Math.max(1, Math.round(totalSeconds));
+  const seconds = Math.max(0, Math.round(totalSeconds));
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -159,25 +165,22 @@ function formatDurationFromSeconds(totalSeconds) {
   if (days) parts.push(`${formatNumber(days)}日`);
   if (hours) parts.push(`${hours}時間`);
   if (minutes) parts.push(`${minutes}分`);
-  if (secs && parts.length < 2) parts.push(`${secs}秒`);
+  if (secs || parts.length === 0) parts.push(`${secs}秒`);
 
-  return parts.slice(0, 3).join("") || "1秒未満";
+  return parts.slice(0, 3).join("") || "0秒";
 }
 
-function formatDurationFromSeconds(totalSeconds) {
-  const seconds = Math.max(1, Math.round(totalSeconds));
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  const parts = [];
-  if (days) parts.push(`${formatNumber(days)}日`);
-  if (hours) parts.push(`${hours}時間`);
-  if (minutes) parts.push(`${minutes}分`);
-  if (secs && parts.length < 2) parts.push(`${secs}秒`);
-
-  return parts.slice(0, 3).join("") || "1秒未満";
+function createSessionCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "TX-";
+  for (let i = 0; i < 4; i += 1) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  code += "-";
+  for (let i = 0; i < 4; i += 1) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
 }
 
 function getLoadingPlanByLoops(loops) {
@@ -189,11 +192,14 @@ function getLoadingPlanByLoops(loops) {
   // 1万回      -> 約1.5分
   // 100万回    -> 約5分
   // 1億回      -> 約12分
-  // ただしブラウザ操作不能を避けるため、最大20分で止める。
+  // 最大20分
   const intenseMs = Math.round(1200 + Math.pow(logLoops, 3) * 1400);
   const cappedMs = Math.min(20 * 60 * 1000, Math.max(2000, intenseMs));
 
-  // 「現実に1件ずつ処理したらどれくらいか」のネタ用推定。
+  // 見た目上の処理単位。件数が大きいほどバッチサイズも大きくする。
+  const batchSize = Math.max(50, Math.min(50000, Math.round(safeLoops / 180)));
+
+  // 「現実に1件ずつ処理したらどれくらいか」の参考値。
   // あくまで仮定として、1回あたり0.2秒で計算する。
   const assumedSecondsPerLoop = 0.2;
   const realisticSeconds = safeLoops * assumedSecondsPerLoop;
@@ -201,7 +207,8 @@ function getLoadingPlanByLoops(loops) {
   return {
     loops: safeLoops,
     totalMs: cappedMs,
-    label: `${(cappedMs / 1000).toFixed(1)}秒`,
+    batchSize,
+    label: formatDurationFromSeconds(cappedMs / 1000),
     realisticLabel: formatDurationFromSeconds(realisticSeconds)
   };
 }
@@ -212,11 +219,43 @@ function animateNumberText(element) {
   element.classList.add("count-pop");
 }
 
+function appendProcessLog({ code, body }) {
+  const now = new Date();
+  const time = now.toLocaleTimeString("ja-JP", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  const item = document.createElement("li");
+
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "log-time";
+  timeSpan.textContent = time;
+
+  const codeSpan = document.createElement("span");
+  codeSpan.className = "log-code";
+  codeSpan.textContent = code;
+
+  const bodySpan = document.createElement("span");
+  bodySpan.className = "log-body";
+  bodySpan.textContent = body;
+
+  item.append(timeSpan, codeSpan, bodySpan);
+  loadingLog.prepend(item);
+
+  while (loadingLog.children.length > 7) {
+    loadingLog.removeChild(loadingLog.lastElementChild);
+  }
+}
+
 function runFakeLoadingThenGenerate() {
   const loopsForDuration = clampNumber(Number(loopsInput.value), 1, 100000000);
   const loadingPlan = getLoadingPlanByLoops(loopsForDuration);
   const durationHint = document.getElementById("loadingDurationHint");
   const realisticTimeHint = document.getElementById("realisticTimeHint");
+  const sessionCode = createSessionCode();
 
   calcButton.disabled = true;
   loadingOverlay.classList.add("is-active");
@@ -225,38 +264,36 @@ function runFakeLoadingThenGenerate() {
   progressBar.style.width = "0%";
   loadingPercent.textContent = "0%";
 
+  if (sessionId) sessionId.textContent = sessionCode;
+  if (queueState) queueState.textContent = "OPEN";
+  if (processedCount) processedCount.textContent = `0 / ${formatNumber(loopsForDuration)}`;
+  if (throughputValue) throughputValue.textContent = "0 tx/s";
+  if (etaValue) etaValue.textContent = loadingPlan.label;
+  if (batchValue) batchValue.textContent = formatNumber(loadingPlan.batchSize);
+
   if (durationHint) {
     durationHint.textContent =
-      `仮想KPI回転数 ${formatNumber(loopsForDuration)}回に応じて、約${loadingPlan.label}の長時間演出を実行します。`;
+      `total sequence: ${formatNumber(loopsForDuration)} tx / expected runtime: ${loadingPlan.label}`;
   }
 
   if (realisticTimeHint) {
     realisticTimeHint.textContent =
-      `仮に1回0.2秒で1件ずつ処理すると、現実的な所要時間は約${loadingPlan.realisticLabel}です。画面では長めの短縮演出にしています。`;
+      `reference: 1 tx = 0.2 sec の場合、逐次処理換算は約${loadingPlan.realisticLabel}。`;
   }
 
   const startTime = performance.now();
   const totalMs = loadingPlan.totalMs;
-  const logInterval = Math.max(900, totalMs / loadingMessages.length);
+  const stageCount = processStages.length;
+  const logInterval = Math.max(700, totalMs / (stageCount * 2.4));
   let nextLogAt = 0;
   let logIndex = 0;
   let animationFrameId = null;
+  let lastProcessed = 0;
 
-  function pushLog(elapsedMs) {
-    const progressRatio = Math.min(1, elapsedMs / totalMs);
-    const virtualProcessed = Math.max(1, Math.round(loopsForDuration * progressRatio));
-    const message = loadingMessages[logIndex % loadingMessages.length];
-
-    const item = document.createElement("li");
-    item.textContent = `${message} / 仮想処理 ${formatNumber(virtualProcessed)}回`;
-    loadingLog.prepend(item);
-
-    while (loadingLog.children.length > 5) {
-      loadingLog.removeChild(loadingLog.lastElementChild);
-    }
-
-    logIndex += 1;
-  }
+  appendProcessLog({
+    code: "INIT",
+    body: `session=${sessionCode} queue=annual-kpi batch=${formatNumber(loadingPlan.batchSize)}`
+  });
 
   function finishLoading() {
     if (animationFrameId) {
@@ -265,6 +302,16 @@ function runFakeLoadingThenGenerate() {
 
     progressBar.style.width = "100%";
     loadingPercent.textContent = "100%";
+
+    if (queueState) queueState.textContent = "CLOSED";
+    if (processedCount) processedCount.textContent = `${formatNumber(loopsForDuration)} / ${formatNumber(loopsForDuration)}`;
+    if (throughputValue) throughputValue.textContent = `${formatNumber(Math.round(loopsForDuration / (totalMs / 1000)))} tx/s`;
+    if (etaValue) etaValue.textContent = "0秒";
+
+    appendProcessLog({
+      code: "FINAL",
+      body: `processed=${formatNumber(loopsForDuration)} status=committed checksum=ok snapshot=ready`
+    });
 
     setTimeout(() => {
       setGeneratedValues();
@@ -283,19 +330,48 @@ function runFakeLoadingThenGenerate() {
       loadingOverlay.classList.remove("is-active");
       loadingOverlay.setAttribute("aria-hidden", "true");
       calcButton.disabled = false;
-    }, 380);
+    }, 520);
   }
 
   function tick(now) {
     const elapsedMs = now - startTime;
     const progress = Math.min(1, elapsedMs / totalMs);
-    const percent = Math.min(100, Math.floor(progress * 100));
+    const easedProgress = 1 - Math.pow(1 - progress, 1.7);
+    const percent = Math.min(100, Math.floor(easedProgress * 100));
+    const processed = Math.min(loopsForDuration, Math.max(lastProcessed, Math.floor(loopsForDuration * easedProgress)));
+    const elapsedSeconds = Math.max(0.001, elapsedMs / 1000);
+    const throughput = Math.round(processed / elapsedSeconds);
+    const remainingMs = Math.max(0, totalMs - elapsedMs);
+
+    lastProcessed = processed;
 
     progressBar.style.width = `${percent}%`;
     loadingPercent.textContent = `${percent}%`;
 
+    if (processedCount) {
+      processedCount.textContent = `${formatNumber(processed)} / ${formatNumber(loopsForDuration)}`;
+    }
+    if (throughputValue) {
+      throughputValue.textContent = `${formatNumber(throughput)} tx/s`;
+    }
+    if (etaValue) {
+      etaValue.textContent = formatDurationFromSeconds(remainingMs / 1000);
+    }
+
     if (elapsedMs >= nextLogAt) {
-      pushLog(elapsedMs);
+      const stage = processStages[logIndex % processStages.length];
+      const cursor = Math.min(loopsForDuration, processed + loadingPlan.batchSize);
+      const latency = Math.max(8, Math.round(18 + Math.random() * 42 - progress * 10));
+      const shard = String((logIndex % 8) + 1).padStart(2, "0");
+      const body =
+        `${stage.text}; cursor=${formatNumber(cursor)} tx; shard=${shard}; latency=${latency}ms; rate=${formatNumber(throughput)}tx/s`;
+
+      appendProcessLog({
+        code: stage.code,
+        body
+      });
+
+      logIndex += 1;
       nextLogAt += logInterval;
     }
 
@@ -307,7 +383,6 @@ function runFakeLoadingThenGenerate() {
     animationFrameId = requestAnimationFrame(tick);
   }
 
-  pushLog(0);
   animationFrameId = requestAnimationFrame(tick);
 }
 

@@ -12,7 +12,7 @@
 <body>
   <div class="top-warning">
     <span>JOKE ONLY</span>
-    シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
+    ネタ用シミュレーションです。実際の収入・売上・所得・納税額を示すものではありません。
   </div>
 
   <header class="site-header">
@@ -41,7 +41,7 @@
       <div class="container hero-grid">
         <div class="hero-copy fade-up">
           <p class="eyebrow">JOKE ONLY SIMULATION</p>
-          <h1>自称年収を<br>膨大な仮想取引で<br>圧倒的に。</h1>
+          <h1>自称年収を<br>無駄に本格的に<br>圧倒的表示。</h1>
           <p class="hero-desc">
             仮想KPI回転数を入力すると、疑似取引風の読み込み演出を経て、
             「仮想年間総売上」「自称秒給」「瞬き1回あたり」などの指標を表示します。
@@ -102,6 +102,7 @@
         <div class="section-heading fade-up">
           <p class="eyebrow">CONTROL PANEL</p>
           <h2>仮想KPIを設定</h2>
+          <p>金融LP風の高級感は残しつつ、常にジョーク表示だと分かる構成にしています。</p>
         </div>
 
         <div class="app-grid">
@@ -335,8 +336,8 @@
       <div class="loading-header">
         <span class="loading-dot"></span>
         <div>
-          <p class="small">JOKE ONLY / 仮想演出</p>
-          <h2>疑似取引ループを演出中</h2>
+          <p class="small">PROCESS MONITOR</p>
+          <h2>transaction batch sequence</h2>
         </div>
       </div>
 
@@ -348,10 +349,37 @@
         <div id="progressBar" class="progress-bar"></div>
       </div>
 
-      <ul id="loadingLog" class="loading-log"></ul>
+      <div class="loading-stats-grid" aria-label="処理ステータス">
+        <div>
+          <span>SESSION</span>
+          <strong id="sessionId">---</strong>
+        </div>
+        <div>
+          <span>QUEUE</span>
+          <strong id="queueState">---</strong>
+        </div>
+        <div>
+          <span>PROCESSED</span>
+          <strong id="processedCount">0 / 0</strong>
+        </div>
+        <div>
+          <span>THROUGHPUT</span>
+          <strong id="throughputValue">0 tx/s</strong>
+        </div>
+        <div>
+          <span>ETA</span>
+          <strong id="etaValue">--</strong>
+        </div>
+        <div>
+          <span>BATCH</span>
+          <strong id="batchValue">--</strong>
+        </div>
+      </div>
+
+      <ul id="loadingLog" class="loading-log process-log"></ul>
 
       <div class="loading-estimate">
-        <p id="loadingDurationHint">回転数に応じてガチ寄りの長時間演出に変化します。</p>
+        <p id="loadingDurationHint">処理件数に応じてバッチ処理風の進行表示に変化します。</p>
         <p id="realisticTimeHint">仮に1回0.2秒なら、現実的な所要時間をここに表示します。</p>
       </div>
 

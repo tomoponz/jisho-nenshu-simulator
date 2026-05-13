@@ -1598,3 +1598,99 @@ details:hover {
 .loading-log {
   max-height: 190px;
 }
+
+
+/* === Serious process monitor style for loading overlay === */
+.loading-header h2 {
+  margin: 0;
+  font-family: Montserrat, Inter, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -.02em;
+}
+
+.loading-header .small {
+  color: #16842c;
+}
+
+.loading-stats-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.loading-stats-grid div {
+  min-width: 0;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(246, 249, 247, .86));
+  border: 1px solid rgba(0, 0, 0, .09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8);
+}
+
+.loading-stats-grid span,
+.loading-stats-grid strong {
+  display: block;
+}
+
+.loading-stats-grid span {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.loading-stats-grid strong {
+  margin-top: 4px;
+  color: #111827;
+  font-family: Montserrat, Inter, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.process-log {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.process-log li {
+  display: grid;
+  grid-template-columns: 92px 70px 1fr;
+  gap: 8px;
+  align-items: start;
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, .08);
+  color: #d8f6df;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.process-log .log-time {
+  color: #93c5fd;
+  font-weight: 800;
+}
+
+.process-log .log-code {
+  color: #86efac;
+  font-weight: 950;
+}
+
+.process-log .log-body {
+  color: #e5e7eb;
+}
+
+@media (max-width: 560px) {
+  .loading-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .process-log li {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
